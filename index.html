@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JukeBid+ | Loyalty Rewards System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #0a0a1f;
+            color: #00ff9d;
+            background-image: 
+                linear-gradient(45deg, #1a1a3f 25%, transparent 25%),
+                linear-gradient(-45deg, #1a1a3f 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #1a1a3f 75%),
+                linear-gradient(-45deg, transparent 75%, #1a1a3f 75%);
+            background-size: 20px 20px;
+        }
+        .neon-border {
+            box-shadow: 0 0 10px #00ff9d, inset 0 0 10px #00ff9d;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px #00ff9d;
+        }
+        .glitch {
+            animation: glitch 1s linear infinite;
+        }
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px,0) skew(0deg); }
+            4%, 60% { transform: translate(-2px,0) skew(0deg); }
+            62% { transform: translate(0,0) skew(5deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-6xl font-bold neon-text glitch">JukeBid+</h1>
+            <p class="text-cyan-400 mt-2">Next-Gen Music Bidding System</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Song Search & Queue -->
+            <div class="bg-[#1a1a3f] p-6 rounded-lg neon-border">
+                <h2 class="text-2xl mb-4">Search & Bid</h2>
+                <div class="space-y-4">
+                    <input type="text" id="searchInput" placeholder="Search for a song..." class="w-full bg-[#0a0a1f] text-cyan-400 border border-cyan-400 rounded p-2 focus:outline-none focus:border-[#00ff9d]">
+                    <div id="searchResults" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Current Queue -->
+            <div class="bg-[#1a1a3f] p-6 rounded-lg neon-border">
+                <h2 class="text-2xl mb-4">Current Queue</h2>
+                <div id="queue" class="space-y-2">
+                    <!-- Queue items will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Loyalty Points -->
+            <div class="bg-[#1a1a3f] p-6 rounded-lg neon-border md:col-span-2">
+                <h2 class="text-2xl mb-4">Your Stats</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <p class="text-xl">Loyalty Points</p>
+                        <p id="points" class="text-4xl text-[#00ff9d]">0</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xl">Total Bids</p>
+                        <p id="bids" class="text-4xl text-[#00ff9d]">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for demonstration
+        let points = 100;
+        let totalBids = 0;
+        let queue = [];
+        const mockSongs = [
+            "Cyberpunk 2077 - Never Fade Away",
+            "The Weeknd - Blinding Lights",
+            "Daft Punk - Get Lucky",
+            "Kavinsky - Nightcall"
+        ];
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase();
+            searchResults.innerHTML = '';
+            
+            if(value) {
+                mockSongs.filter(song => song.toLowerCase().includes(value))
+                    .forEach(song => {
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between items-center bg-[#0a0a1f] p-2 rounded';
+                        div.innerHTML = `
+                            <span>${song}</span>
+                            <button onclick="placeBid('${song}')" class="bg-cyan-400 text-black px-4 py-1 rounded hover:bg-[#00ff9d]">
+                                Bid
+                            </button>
+                        `;
+                        searchResults.appendChild(div);
+                    });
+            }
+        });
+
+        function placeBid(song) {
+            const bidAmount = prompt("Enter bid amount (min 10 points):", "10");
+            if(bidAmount && !isNaN(bidAmount) && parseInt(bidAmount) <= points) {
+                points -= parseInt(bidAmount);
+                totalBids++;
+                queue.push({ song, bid: parseInt(bidAmount) });
+                updateQueue();
+                updateStats();
+                alert(`Bid placed successfully! Song added to queue.`);
+            } else {
+                alert("Invalid bid amount or insufficient points!");
+            }
+        }
+
+        function updateQueue() {
+            const queueElement = document.getElementById('queue');
+            queueElement.innerHTML = '';
+            queue.sort((a, b) => b.bid - a.bid).forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-[#0a0a1f] p-2 rounded';
+                div.innerHTML = `
+                    <span>${index + 1}. ${item.song}</span>
+                    <span class="text-[#00ff9d]">${item.bid} pts</span>
+                `;
+                queueElement.appendChild(div);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('points').textContent = points;
+            document.getElementById('bids').textContent = totalBids;
+        }
+
+        // Initial updates
+        updateStats();
+        updateQueue();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
